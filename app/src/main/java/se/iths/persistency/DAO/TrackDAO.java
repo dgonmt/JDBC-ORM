@@ -11,44 +11,24 @@ import java.util.Collection;
 public class TrackDAO implements CRUDInterface {
     @Override
     public Collection<Track> findAll() throws SQLException {
+
         Collection<Track> tracks = new ArrayList<>();
-
-
-
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT * FROM Track;";
-
         Statement st = con.createStatement();
-
         ResultSet rs = st.executeQuery(sql);
-
 
         while(rs.next()) {
             Long trackId = rs.getLong("TrackId");
             String trackName = rs.getString("Name");
             Long albumId = rs.getLong("AlbumId");
 
-
-
             tracks.add(new Track(trackId, trackName, albumId));
-
-
         }
-
-
-
-
-
-
-
 
         ConnectToDB.closeResultSet(rs);
         ConnectToDB.closeStatement(st);
         ConnectToDB.closeConnection(con);
-
-
-
 
         return tracks;
     }
@@ -73,14 +53,11 @@ public class TrackDAO implements CRUDInterface {
         return false;
     }
 
-    public Collection<Track> findByAlbumId(Long albumId) throws SQLException {
+    public Collection<Track> findByParent(Long albumId) throws SQLException {
 
-        Collection<Track> result = new ArrayList<>();
-
+        Collection<Track> tracks = new ArrayList<>();
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT TrackId, Name, AlbumId FROM Track WHERE AlbumId = ?";
-
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setLong(1, albumId);
         ResultSet rs = ps.executeQuery();
@@ -89,17 +66,15 @@ public class TrackDAO implements CRUDInterface {
             Long rsTrackId = rs.getLong("TrackId");
             String rsName = rs.getString("Name");
             Long rsAlbumId = rs.getLong("AlbumId");
-            result.add(new Track(rsTrackId, rsName, rsAlbumId));
+
+            tracks.add(new Track(rsTrackId, rsName, rsAlbumId));
         }
 
         ConnectToDB.closeResultSet(rs);
         ConnectToDB.closePreparedStatement(ps);
         ConnectToDB.closeConnection(con);
 
-
-
-
-        return result;
+        return tracks;
 
     }
 

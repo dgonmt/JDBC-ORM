@@ -16,41 +16,27 @@ public class AlbumDAO implements CRUDInterface<Album> {
     public Collection<Album> findAll() throws SQLException {
 
         Collection<Album> albums = new ArrayList<>();
-
         TrackDAO trackDao = new TrackDAO();
-
-
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT * FROM Album";
-
         Statement st = con.createStatement();
-
         ResultSet rs = st.executeQuery(sql);
-
 
         while (rs.next()) {
             Long albumId = rs.getLong("AlbumId");
             String albumTitle = rs.getString("Title");
             Long artistId = rs.getLong("ArtistId");
 
-
             albums.add(new Album(albumId, albumTitle, artistId));
-
-
         }
-
-
 
         for (Album album : albums) {
 
-            if (trackDao.findByAlbumId(album.getAlbumId()).size() > 0) {
-                album.add(trackDao.findByAlbumId(album.getAlbumId()));
+            if (trackDao.findByParent(album.getAlbumId()).size() > 0) {
+                album.add(trackDao.findByParent(album.getAlbumId()));
 
             }
         }
-
-
 
         ConnectToDB.closeResultSet(rs);
         ConnectToDB.closeStatement(st);
@@ -80,16 +66,12 @@ public class AlbumDAO implements CRUDInterface<Album> {
         return false;
     }
 
-    public Collection<Album> findByArtistId(Long artistId) throws SQLException {
+    public Collection<Album> findByParent(Long artistId) throws SQLException {
 
         Collection<Album> result = new ArrayList<>();
-
         TrackDAO trackDAO = new TrackDAO();
-
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT * FROM Album WHERE ArtistId = ?";
-
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setLong(1, artistId);
         ResultSet rs = ps.executeQuery();
@@ -98,6 +80,7 @@ public class AlbumDAO implements CRUDInterface<Album> {
             Long rsAlbumId = rs.getLong("AlbumId");
             String rsTitle = rs.getString("Title");
             Long rsArtistId = rs.getLong("ArtistId");
+
             result.add(new Album(rsAlbumId, rsTitle, rsArtistId));
         }
 
@@ -105,19 +88,13 @@ public class AlbumDAO implements CRUDInterface<Album> {
         ConnectToDB.closePreparedStatement(ps);
         ConnectToDB.closeConnection(con);
 
-
         for (Album album : result) {
 
-            if (trackDAO.findByAlbumId(album.getAlbumId()).size() > 0) {
-                album.add(trackDAO.findByAlbumId(album.getAlbumId()));
+            if (trackDAO.findByParent(album.getAlbumId()).size() > 0) {
+                album.add(trackDAO.findByParent(album.getAlbumId()));
 
             }
         }
-
-
-
-
-
 
         return result;
     }

@@ -12,47 +12,32 @@ public class ArtistDAO implements CRUDInterface<Artist> {
 
     @Override
     public Collection<Artist> findAll() throws SQLException {
+
         Collection<Artist> artists = new ArrayList<>();
         AlbumDAO albumDao = new AlbumDAO();
-
-
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT * FROM Artist;";
-
         Statement st = con.createStatement();
-
         ResultSet rs = st.executeQuery(sql);
-
 
         while(rs.next()) {
             Long artistId = rs.getLong("ArtistId");
             String artistName = rs.getString("Name");
 
-
             artists.add(new Artist(artistId, artistName));
-
-
         }
-
-
 
         for (Artist artist : artists)  {
 
-            if (albumDao.findByArtistId(artist.getArtistId()).size() > 0) {
-                artist.add(albumDao.findByArtistId(artist.getArtistId()));
+            if (albumDao.findByParent(artist.getArtistId()).size() > 0) {
+                artist.add(albumDao.findByParent(artist.getArtistId()));
 
             }
         }
 
-
-
         ConnectToDB.closeResultSet(rs);
         ConnectToDB.closeStatement(st);
         ConnectToDB.closeConnection(con);
-
-
-
 
         return artists;
     }
@@ -60,14 +45,9 @@ public class ArtistDAO implements CRUDInterface<Artist> {
     @Override
     public Artist findById(Long id) throws SQLException {
 
-
         Artist artist = null;
-
-
         Connection con = ConnectToDB.getConnection();
-
         String sql = "SELECT * FROM Artist WHERE ArtistId = ?";
-
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setLong(1, id);
         ResultSet rs = ps.executeQuery();
@@ -92,16 +72,13 @@ public class ArtistDAO implements CRUDInterface<Artist> {
         String sql_insert = "INSERT INTO Artist (Name) VALUES (?)";
         PreparedStatement ps = con.prepareStatement(sql_insert);
         ps.setString(1, object.getName());
-
         ps.execute();
-
-        ConnectToDB.closePreparedStatement(ps);
-        ConnectToDB.closeConnection(con);
-
-
         Collection<Artist> result = findAll();
         Integer idOfLastObject_int =  result.size();
         Long idOfLastObject_long = idOfLastObject_int.longValue();
+
+        ConnectToDB.closePreparedStatement(ps);
+        ConnectToDB.closeConnection(con);
 
         return findById(idOfLastObject_long);
     }
@@ -114,12 +91,10 @@ public class ArtistDAO implements CRUDInterface<Artist> {
         PreparedStatement ps = con.prepareStatement(sql_update);
         ps.setString(1, object.getName());
         ps.setLong(2, id);
-
         ps.execute();
 
         ConnectToDB.closePreparedStatement(ps);
         ConnectToDB.closeConnection(con);
-
 
         return null;
     }
@@ -128,12 +103,9 @@ public class ArtistDAO implements CRUDInterface<Artist> {
     public boolean delete(Artist object) throws SQLException {
 
         Connection con = ConnectToDB.getConnection();
-
         String sql_delete = "DELETE FROM Artist WHERE Name LIKE(?)";
-
         PreparedStatement ps = con.prepareStatement(sql_delete);
         ps.setString(1, object.getName());
-
         ps.execute();
 
         ConnectToDB.closePreparedStatement(ps);
